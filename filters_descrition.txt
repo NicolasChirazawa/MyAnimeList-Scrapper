@@ -1,0 +1,23 @@
+Para entender como se utiliza estes campos, vai haver uma descrição explicando:
+
+averageScore_greater: Encontra animês com notas superiores àquela média;
+
+averageScore_lesser: Encontra animês com notas inferiores àquela média;
+
+episode | (Autoexplicativo) Quantidade de episódios daquela obra;
+
+genre_in | Aqui você pode usar uma lista de gêneros para descrever as obras que busca
+
+popularity_greater: Encontra animês com popularidade superiores ao valor colocado
+
+popularity_lesser: Encontra animês com popularidade superiores ao valor colocado
+
+search | Você vai colocar o nome da obra na estrutura do site do animelist em inglês, como por exemplo: 'Spy x Family Season 3' (https://myanimelist.net/anime/59027/Spy_x_Family_Season_3)
+
+source_in | As seguintes possibilidades são possíveis: ORIGINAL, MANGA, LIGHT_NOVEL, VISUAL_NOVEL, VIDEO_GAME, OTHER, NOVEL, DOUJINSHI, ANIME, WEB_NOVEL, LIVE_ACTION, GAME, COMIC, MULTIMEDIA_PROJECT, PICTURE_BOOK
+
+studio: (Autoexplicativo) O nome do estúdio
+
+season | A temporada que ele saiu, no caso, no formato em inglês: 'FALL', 'SUMMER', 'SPRING', 'WINTER'
+
+yearSeason | (Autoexplicativo) Ano da temporada que ele foi lançado
