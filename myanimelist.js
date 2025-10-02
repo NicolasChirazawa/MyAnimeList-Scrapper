@@ -1,5 +1,4 @@
-const jsdom = require("jsdom");
-const { JSDOM }= jsdom;
+const { parse } = require('node-html-parser');
 const { messages } = require("./messages.js");
 
 function graphQLStruct (filters_data, strictSearch) {
@@ -63,7 +62,6 @@ async function graphqlSearch (query, variables) {
 
     switch(data.status) {
         case 403:
-            console.log(messages.ANILIST_IS_DOWN);
             throw new Error(messages.ANILIST_IS_DOWN);
         case 429:
             // Caso seja necessário conferir alguma vez, pode ser visto no header do request em 'x-ratelimit-limit' como pode ser visto na documentação ('https://docs.anilist.co/guide/rate-limiting')
@@ -108,14 +106,33 @@ async function requestMALcodeList (filters_data) {
     return MALCodeList;   
 }
 
-async function scrappingMALpage (MALcodeList) {
-    for(let i = 0; i < MALcodeList.length; i++) {
-        let myanimelist_site = await fetch(`https://myanimelist.net/anime/${MALcodeList[i]}`).then((site) => { return site.text() } );
-        
-        const dom = new JSDOM(myanimelist_site).window.document.querySelector("html").outerHTML;
-        console.log(dom)
+async function scrappingMALpage (MALcode) {
+    let MALSite = await fetch(`https://myanimelist.net/anime/${MALcode}`);
+
+    switch (MALSite.status) {
+        case 404:
+            throw (messages.MAL_CODE_DONT_FOUND + MALcode);
     }
+
+    MALSite = await MALSite.text().then((site) => parse(site));
+
+    const image = MALSite.querySelector("img.lazyloaded")?.getAttribute("src");
+
+    const averageScore = MALSite.querySelector('.score-label.score-8')?.textContent;
+    const membersQuantityScore = MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user");
+
+    const [season, YearSeason] = 
+        [
+            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[0],
+            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[1]
+        ];
+    const type = MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent;
+    const studio = MALSite.querySelector("span.information.studio.author")?.querySelector("a")?.textContent;
+
+    const ranked = MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent;
+    const popularity = MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent;
 }
+
 
 async function main() {
     // Para entender a descrição de cada um dos filtros, há o arquivo 'filters_description' para consulta
@@ -126,14 +143,14 @@ async function main() {
         genre_in:             [false, '[String]'],
         popularity_greater:   [false, 'Int'],
         popularity_lesser:    [false, 'Int'],
-        search:               ["Spy x Family Season 3", 'String'],
-        season:               [false, 'MediaSeason'],
-        seasonYear:           [false, 'Int'],
+        search:               [false, 'String'],
+        season:               ['WINTER', 'MediaSeason'],
+        seasonYear:           [2019, 'Int'],
         sort:                 [false, 'MediaSort'],
         source:               [false, 'MediaSource'],
         startDate_greater:    [false, 'FuzzyDateInt'],
         startDate_lesser:     [false, 'FuzzyDateInt'],
-        strictSearch:         true
+        strictSearch:         false
     }
 
     let MALCodeList;
@@ -143,8 +160,14 @@ async function main() {
         console.error(e);
     }
 
-    await scrappingMALpage(MALCodeList);
+    for(let i = 0; i < MALCodeList.length; i++) {
+        try {
+            await scrappingMALpage(MALCodeList[i]);
+        } catch (e) {
+            console.log(e);
+        }
+    }
 }
-main();
+main()
 
 // extrair: score, usuários, ranked, popularidade, membros, temporada, gênero
