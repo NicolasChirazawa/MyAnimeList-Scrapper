@@ -1,8 +1,9 @@
+const fs = require('fs');
 const { parse } = require('node-html-parser');
 const { messages } = require("./messages.js");
 
 function graphQLStruct (filters_data, strictSearch) {
-    let [query_struct, media_struct ]= ['', ''];
+    let [query_struct, media_struct]= ['', ''];
     let variables = {};
 
     const filters_keys = Object.keys(filters_data);
@@ -106,6 +107,31 @@ async function requestMALcodeList (filters_data) {
     return MALCodeList;   
 }
 
+function changeCommaToPoint(string) {
+    let stringModified = '';
+    for(let i = 0; i < string.length; i++){
+        if(string[i] === ',') {
+            stringModified += '.'
+        } else {
+            stringModified += string[i]
+        }
+    }
+    return stringModified;
+}
+
+function studioNameCleanList(studioList) {
+    let cleanList = '';
+
+    for(let i = 0; i < studioList.length; i++) {
+        let studio = String(studioList[i]).trim();
+
+        if(i != studioList.length - 1) { studio += ' / ' }
+        cleanList += studio;
+    }
+
+    return cleanList;
+}
+
 async function scrappingMALpage (MALcode) {
     let MALSite = await fetch(`https://myanimelist.net/anime/${MALcode}`);
 
@@ -116,23 +142,58 @@ async function scrappingMALpage (MALcode) {
 
     MALSite = await MALSite.text().then((site) => parse(site));
 
-    const image = MALSite.querySelector("img.lazyloaded")?.getAttribute("src");
+    const title = MALSite.querySelector("h1.title-name.h1_bold_none").innerText;
 
-    const averageScore = MALSite.querySelector('.score-label.score-8')?.textContent;
-    const membersQuantityScore = MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user");
+    // Precisa entender o problema deste aqui;
+    const coverLink = MALSite.querySelector("td.borderClass").querySelector("img.lazyloaded");
+
+    const averageScore = MALSite.querySelector('.score-label')?.textContent;
+    let usersScored = MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user")?.split(' ')[0];
 
     const [season, YearSeason] = 
         [
             MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[0],
             MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[1]
         ];
-    const type = MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent;
-    const studio = MALSite.querySelector("span.information.studio.author")?.querySelector("a")?.textContent;
+    const media = MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent;
+    let studio = MALSite.querySelector("span.information.studio.author")?.innerText?.split(', ');
 
-    const ranked = MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent;
-    const popularity = MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent;
+    let rankedOnMal = MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent;
+    let popularityOnMAL = MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent;
+
+    if(usersScored === '-') { usersScored = 'N/A' }
+    else { usersScored     = changeCommaToPoint(usersScored) };
+
+    if(rankedOnMal !== 'N/A') { rankedOnMal = rankedOnMal.slice(1) }
+
+    popularityOnMAL = changeCommaToPoint(popularityOnMAL)
+    studio          = studioNameCleanList(studio);
+
+    return [
+        title,
+        coverLink,
+        averageScore,
+        usersScored,
+        season,
+        YearSeason,
+        media,
+        studio,
+        rankedOnMal,
+        popularityOnMAL
+    ]
 }
 
+function structCSV(dataCSV) {
+    // CSV = Comma-Separated Values 
+    let CSV = [
+        ['sep=,'],
+        ["title","coverLink","averageScore","membersScored", "season","YearSeason","media","studio" ,"rankedOnMal","popularityOnMAL"]
+    ];
+
+    CSV.push(dataCSV);
+
+    return CSV;
+}
 
 async function main() {
     // Para entender a descrição de cada um dos filtros, há o arquivo 'filters_description' para consulta
@@ -143,15 +204,16 @@ async function main() {
         genre_in:             [false, '[String]'],
         popularity_greater:   [false, 'Int'],
         popularity_lesser:    [false, 'Int'],
-        search:               [false, 'String'],
-        season:               ['WINTER', 'MediaSeason'],
-        seasonYear:           [2019, 'Int'],
+        search:               ['Spy x Family Season 3', 'String'],
+        season:               [false, 'MediaSeason'],
+        seasonYear:           [false, 'Int'],
         sort:                 [false, 'MediaSort'],
         source:               [false, 'MediaSource'],
         startDate_greater:    [false, 'FuzzyDateInt'],
         startDate_lesser:     [false, 'FuzzyDateInt'],
-        strictSearch:         false
+        strictSearch:         true,
     }
+    const is_generating_excel = true;
 
     let MALCodeList;
     try {
@@ -160,14 +222,33 @@ async function main() {
         console.error(e);
     }
 
+    let dataCSV = [];
+    let data    = {};
+
     for(let i = 0; i < MALCodeList.length; i++) {
         try {
-            await scrappingMALpage(MALCodeList[i]);
+            let row_data = await scrappingMALpage(MALCodeList[i]);
+
+            data[MALCodeList[i]] = row_data;
+            if(is_generating_excel === true) { dataCSV.push(row_data) };
         } catch (e) {
             console.log(e);
         }
-    }
-}
-main()
+    };
 
-// extrair: score, usuários, ranked, popularidade, membros, temporada, gênero
+    if(is_generating_excel === true) {
+        let CSV = structCSV(dataCSV);
+
+        for (let i = 0; i < CSV.length; i++) { CSV[i] = CSV[i].join(',') };
+        CSV = CSV.join('\n');
+
+        fs.writeFile('MALdata.csv', CSV, 'utf-8', (err) => {
+            if(err) {
+                console.error('Erro ao criar o arquivo: ', err);
+                return
+            }
+        });
+    };
+    console.log('teste')
+}
+main();
