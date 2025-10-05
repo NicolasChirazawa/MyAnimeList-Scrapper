@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "start": "node --env-file=.env ./app/scrapping.js"
+  },
   "dependencies": {
     "node-html-parser": "^7.0.1"
   }
