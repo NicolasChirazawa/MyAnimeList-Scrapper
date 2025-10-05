@@ -20,7 +20,7 @@ const is_generating_excel = false;
 
 const useProxy = true;
 
-/* Lista do .env */
+/* Lista realizada no .env */
 const proxyList = (process.env.PROXY_LIST).split(', ');
 
 module.exports = { filters_data, is_generating_excel, useProxy, proxyList }
