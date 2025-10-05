@@ -1,7 +1,0 @@
-const messages = {
-    ANILIST_IS_DOWN: "A API do Anilist está fora do ar!",
-    RATE_LIMITING: "Você atingiu o limite de request da API do Anilist por minuto. Espere mais um minuto para prosseguir. O seu total de requests no último minuto foi: ",
-    MAL_CODE_DONT_FOUND: "A página não foi encontrada para o código retornado pelo Anilist. Código: "
-}
-
-module.exports = { messages }
