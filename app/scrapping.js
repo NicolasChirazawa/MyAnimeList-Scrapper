@@ -158,45 +158,94 @@ async function scrappingMALpage (MALcode, i) {
             throw (messages.MAL_CODE_DONT_FOUND + MALcode);
     }
 
-    const title = MALSite.querySelector("h1.title-name.h1_bold_none").innerText;
+    let title = 
+        MALSite.querySelector("h1.title-name.h1_bold_none").innerText === undefined 
+        ? 'N/A' 
+        : MALSite.querySelector("h1.title-name.h1_bold_none").innerText;
 
     // Precisa entender o problema deste aqui;
-    const coverLink = MALSite.querySelector("td.borderClass").querySelector("img.lazyloaded");
+    let coverLink = 
+        MALSite.querySelector("td.borderClass").querySelector("img.lazyloaded") === undefined 
+        ? '' 
+        : MALSite.querySelector("td.borderClass").querySelector("img.lazyloaded");
 
-    const averageScore = MALSite.querySelector('.score-label')?.textContent;
-    let usersScored = MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user")?.split(' ')[0];
+    let averageScore = 
+        MALSite.querySelector('.score-label')?.textContent === undefined 
+        ? 0.00 
+        : MALSite.querySelector('.score-label')?.textContent;
 
-    const [season, YearSeason] = 
+    let usersScored = 
+        MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user")?.split(' ')[0] === undefined 
+        ? 0.00
+        : MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user")?.split(' ')[0];
+
+    let [season, YearSeason] = 
         [
-            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[0],
-            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[1]
+            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[0] === undefined 
+            ? 'N/A' 
+            : MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[0],
+
+            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[1] === undefined 
+            ? 'N/A'
+            : MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[1]
         ];
-    const media = MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent;
-    let studio = MALSite.querySelector("span.information.studio.author")?.innerText?.split(', ');
 
-    let rankedOnMal = MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent;
-    let popularityOnMAL = MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent;
+    let media = 
+        MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent === undefined 
+        ? 'N/A'
+        : MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent;
 
-    if(usersScored === '-') { usersScored = 'N/A' }
-    else { usersScored     = changeCommaToPoint(usersScored) };
+    let studio = 
+        MALSite.querySelector("span.information.studio.author")?.innerText?.split(', ') === undefined
+        ? 'N/A'
+        : MALSite.querySelector("span.information.studio.author")?.innerText?.split(', ');
 
-    if(rankedOnMal !== 'N/A') { rankedOnMal = rankedOnMal.slice(1) }
+    let rankedOnMal = 
+        MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent === undefined
+        ? 0
+        : MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent;
 
-    popularityOnMAL = changeCommaToPoint(popularityOnMAL)
-    studio          = studioNameCleanList(studio);
+    let popularityOnMAL = 
+        MALSite.querySelector("span.numbers.popularity")?.querySelector("strong").textContent === undefined
+        ? 0
+        : MALSite.querySelector("span.numbers.popularity")?.querySelector("strong").textContent;
 
-    return [
-        title,
-        coverLink,
-        averageScore,
-        usersScored,
-        season,
-        YearSeason,
-        media,
-        studio,
-        rankedOnMal,
-        popularityOnMAL
-    ]
+    let members = 
+        MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent === undefined
+        ? 0
+        : MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent;
+
+    if (usersScored === '-') { usersScored = 0.00 }
+    if (rankedOnMal !== 'N/A' && rankedOnMal !== 0) { 
+        rankedOnMal = rankedOnMal.slice(1); 
+    }
+    if (popularityOnMAL !== 'N/A' && popularityOnMAL !== 0) { 
+        popularityOnMAL = popularityOnMAL.slice(1); 
+    }
+    
+    if (usersScored !== 0.00) {
+        usersScored = changeCommaToPoint(usersScored);
+    };
+    if (popularityOnMAL !== 0) {
+        popularityOnMAL = changeCommaToPoint(popularityOnMAL);
+    };
+    if (studio !== 'N/A') {
+        studio = studioNameCleanList(studio);
+    }
+
+    return {
+        ['title']: title,
+        ['coverlink']: coverLink,
+        ['averageScore']: averageScore,
+        ['usersScored']: usersScored,
+        ['season']: season,
+        ['yearSeason']: YearSeason,
+        ['media']: media,
+        ['studio']: studio,
+        ['rankedOnMal']: rankedOnMal,
+        ['popularityOnMAL']: popularityOnMAL,
+        ['members']: members
+    }
 }
 
 function structCSV (dataCSV) {
@@ -219,15 +268,14 @@ async function main() {
         console.error(e);
     }
 
+    if(MALCodeList.length === 0) { return console.log(messages.LIST_EQUALS_ZERO) };
+
     let dataCSV = [];
-    let data    = {};
 
     for(let i = 0; i < MALCodeList.length; i++) {
         try {
             let row_data = await scrappingMALpage(MALCodeList[i], i);
-
-            data[MALCodeList[i]] = row_data;
-            if(is_generating_excel === true) { dataCSV.push(row_data) };
+            dataCSV.push(row_data);
         } catch (e) {
             console.log(e);
         }
@@ -246,6 +294,6 @@ async function main() {
             }
         });
     };
-    console.log(data)
+    console.log(dataCSV)
 }
 main();
