@@ -122,6 +122,12 @@ function changeCommaToPoint (string) {
     return stringModified;
 }
 
+function createNewTag (tag, fallback) {
+    return tag === undefined 
+        ? fallback 
+        : tag;
+}
+
 function studioNameCleanList (studioList) {
     let cleanList = '';
 
@@ -135,7 +141,7 @@ function studioNameCleanList (studioList) {
     return cleanList;
 }
 
-async function scrappingMALpage (MALcode, i) {
+async function requestMALPage(MALcode, i) {
     let MALSite = '';
     let link = `https://myanimelist.net/anime/${MALcode}`;
     let statusCode = '';
@@ -158,80 +164,126 @@ async function scrappingMALpage (MALcode, i) {
             throw (messages.MAL_CODE_DONT_FOUND + MALcode);
     }
 
-    let title = 
-        MALSite.querySelector("h1.title-name.h1_bold_none").innerText === undefined 
-        ? 'N/A' 
-        : MALSite.querySelector("h1.title-name.h1_bold_none").innerText;
+    return MALSite;
+}
 
-    // Precisa entender o problema deste aqui;
-    let coverLink = 
-        MALSite.querySelector("td.borderClass").querySelector("img.lazyloaded") === undefined 
-        ? '' 
-        : MALSite.querySelector("td.borderClass").querySelector("img.lazyloaded");
+async function scrappingMALpage (MALSite) {
+    let tag;
 
-    let averageScore = 
-        MALSite.querySelector('.score-label')?.textContent === undefined 
-        ? 0.00 
-        : MALSite.querySelector('.score-label')?.textContent;
+    const TAG_NAME = "h1.title-name.h1_bold_none";
+    tag = MALSite
+        ?.querySelector(TAG_NAME)
+        ?.innerText;
+    let fallback = 'N/A';
+    let title = createNewTag(tag, fallback);
 
-    let usersScored = 
-        MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user")?.split(' ')[0] === undefined 
-        ? 0.00
-        : MALSite.querySelector('div.fl-l.score')?.getAttribute("data-user")?.split(' ')[0];
 
-    let [season, YearSeason] = 
-        [
-            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[0] === undefined 
-            ? 'N/A' 
-            : MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[0],
+    const TAG_COVER = "td.borderClass";
+    const SUBTAG_COVER = "img.lazyloaded";
+    tag = MALSite
+        ?.querySelector(TAG_COVER)
+        ?.querySelector(SUBTAG_COVER)
+    fallback = 'N/A';
+    let coverLink = createNewTag(tag, fallback);
+    
 
-            MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[1] === undefined 
-            ? 'N/A'
-            : MALSite.querySelector("span.information.season")?.querySelector("a")?.textContent.split(' ')[1]
-        ];
+    const TAG_AVERAGE_SCORE = '.score-label';
+    tag = MALSite
+        ?.querySelector(TAG_AVERAGE_SCORE)
+        ?.textContent
+    fallback = 0.00;
+    let averageScore = createNewTag(tag, fallback);
 
-    let media = 
-        MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent === undefined 
-        ? 'N/A'
-        : MALSite.querySelector("span.information.type")?.querySelector("a")?.textContent;
 
-    let studio = 
-        MALSite.querySelector("span.information.studio.author")?.innerText?.split(', ') === undefined
-        ? 'N/A'
-        : MALSite.querySelector("span.information.studio.author")?.innerText?.split(', ');
-
-    let rankedOnMal = 
-        MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent === undefined
-        ? 0
-        : MALSite.querySelector("span.numbers.ranked")?.querySelector("strong").textContent;
-
-    let popularityOnMAL = 
-        MALSite.querySelector("span.numbers.popularity")?.querySelector("strong").textContent === undefined
-        ? 0
-        : MALSite.querySelector("span.numbers.popularity")?.querySelector("strong").textContent;
-
-    let members = 
-        MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent === undefined
-        ? 0
-        : MALSite.querySelector("span.numbers.members")?.querySelector("strong").textContent;
-
+    const TAG_USERS_SCORED = "div.fl-l.score";
+    const SUBTAG_USERS_SCORED = "data-user";
+    tag = MALSite
+        .querySelector(TAG_USERS_SCORED)
+        ?.getAttribute(SUBTAG_USERS_SCORED)
+        ?.split(' ')[0];
+    fallback = 0.00;
+    let usersScored = createNewTag(tag, fallback);
     if (usersScored === '-') { usersScored = 0.00 }
-    if (rankedOnMal !== 'N/A' && rankedOnMal !== 0) { 
-        rankedOnMal = rankedOnMal.slice(1); 
-    }
+    else if (usersScored !== 0.00) { usersScored = changeCommaToPoint(usersScored) };
+
+
+    const TAG_SEASON = "span.information.season";
+    const SUBTAG_SEASON = "a";
+    tag = MALSite
+        .querySelector(TAG_SEASON)
+        ?.querySelector(SUBTAG_SEASON)
+        ?.textContent
+        .split(' ')[0];
+    fallback = 'N/A';
+    let season = createNewTag(tag, fallback);
+
+
+    const TAG_YEAR_SEASON = "span.information.season";
+    const SUBTAG_YEAR_SEASON = "a";
+    tag = MALSite
+        .querySelector(TAG_YEAR_SEASON)
+        ?.querySelector(SUBTAG_YEAR_SEASON)
+        ?.textContent
+        .split(' ')[1];
+    fallback = 'N/A';
+    let YearSeason = createNewTag(tag, fallback);
+
+    
+    const TAG_MEDIA = "span.information.type";
+    const SUBTAG_MEDIA = "a";
+    tag = MALSite
+        .querySelector(TAG_MEDIA)
+        ?.querySelector(SUBTAG_MEDIA)
+        ?.textContent;
+    fallback = 'N/A';
+    let media = createNewTag(tag, fallback);
+
+
+    const TAG_STUDIO = "span.information.studio.author";
+    tag = MALSite
+        .querySelector(TAG_STUDIO)
+        ?.innerText
+        ?.split(', ');
+    fallback = 'N/A';
+    let studio = createNewTag(tag, fallback);
+    if (studio !== 'N/A') { studio = studioNameCleanList(studio) }
+
+
+    const TAG_RANKED = "span.numbers.ranked";
+    const SUBTAG_RANKED = "strong";
+    tag = MALSite
+        .querySelector(TAG_RANKED)
+        ?.querySelector(SUBTAG_RANKED)
+        .textContent;
+    fallback = 0;
+    let rankedOnMal = createNewTag(tag, fallback);
+    if (rankedOnMal !== 'N/A' && rankedOnMal !== 0) { rankedOnMal = rankedOnMal.slice(1) }
+
+
+    const TAG_POPULARITY = "span.numbers.popularity";
+    const SUBTAG_POPULARITY = "strong";
+    tag = MALSite
+        ?.querySelector(TAG_POPULARITY)
+        ?.querySelector(SUBTAG_POPULARITY)
+        ?.textContent;
+    fallback = 0;
+    let popularityOnMAL = createNewTag(tag, fallback);
+    if (popularityOnMAL !== 0) { popularityOnMAL = changeCommaToPoint(popularityOnMAL) };
+
+
+    let TAG_MEMBERS = "span.numbers.members";
+    const SUBTAG_MEMBERS = "strong";
+    tag = MALSite
+        ?.querySelector(TAG_MEMBERS)
+        ?.querySelector(SUBTAG_MEMBERS)
+        ?.textContent;
+    fallback = 0;
+    let membersOnMal = createNewTag(tag, fallback);
     if (popularityOnMAL !== 'N/A' && popularityOnMAL !== 0) { 
         popularityOnMAL = popularityOnMAL.slice(1); 
     }
-    
-    if (usersScored !== 0.00) {
-        usersScored = changeCommaToPoint(usersScored);
-    };
-    if (popularityOnMAL !== 0) {
-        popularityOnMAL = changeCommaToPoint(popularityOnMAL);
-    };
-    if (studio !== 'N/A') {
-        studio = studioNameCleanList(studio);
-    }
+    if(membersOnMal !== 0) { membersOnMal = changeCommaToPoint(membersOnMal) }
+
 
     return {
         ['title']: title,
@@ -244,7 +296,7 @@ async function scrappingMALpage (MALcode, i) {
         ['studio']: studio,
         ['rankedOnMal']: rankedOnMal,
         ['popularityOnMAL']: popularityOnMAL,
-        ['members']: members
+        ['members']: membersOnMal
     }
 }
 
@@ -252,10 +304,12 @@ function structCSV (dataCSV) {
     // CSV = Comma-Separated Values 
     let CSV = [
         ['sep=,'],
-        ["title","coverLink","averageScore","membersScored", "season","YearSeason","media","studio" ,"rankedOnMal","popularityOnMAL"]
+        ["Title","Cover_Link","Average_Score","Members_Scored", "Season","Year_Season","Media","Studio(s)" ,"Ranked","Popularity", "Members"]
     ];
 
-    CSV.push(dataCSV);
+    for(let i = 0; i < dataCSV.length; i++) {
+        CSV.push(Object.values(dataCSV[i]));
+    }
 
     return CSV;
 }
@@ -274,17 +328,20 @@ async function main() {
 
     for(let i = 0; i < MALCodeList.length; i++) {
         try {
-            let row_data = await scrappingMALpage(MALCodeList[i], i);
-            dataCSV.push(row_data);
+            let MALSite = await requestMALPage(MALCodeList[i], i);
+            let MALdata = await scrappingMALpage(MALSite);
+            dataCSV.push(MALdata);
         } catch (e) {
             console.log(e);
         }
+
+        console.log(`====== Progresso: ${i + 1}/${MALCodeList.length} ======`)
     };
 
     if(is_generating_excel === true) {
         let CSV = structCSV(dataCSV);
 
-        for (let i = 0; i < CSV.length; i++) { CSV[i] = CSV[i].join(',') };
+        CSV[2] = CSV[2].join(',');
         CSV = CSV.join('\n');
 
         fs.writeFile('MALdata.csv', CSV, 'utf-8', (err) => {
