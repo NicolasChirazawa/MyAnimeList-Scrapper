@@ -210,7 +210,7 @@ async function scrappingMALpage (MALSite) {
     const TAG_SEASON = "span.information.season";
     const SUBTAG_SEASON = "a";
     tag = MALSite
-        .querySelector(TAG_SEASON)
+        ?.querySelector(TAG_SEASON)
         ?.querySelector(SUBTAG_SEASON)
         ?.textContent
         .split(' ')[0];
@@ -221,7 +221,7 @@ async function scrappingMALpage (MALSite) {
     const TAG_YEAR_SEASON = "span.information.season";
     const SUBTAG_YEAR_SEASON = "a";
     tag = MALSite
-        .querySelector(TAG_YEAR_SEASON)
+        ?.querySelector(TAG_YEAR_SEASON)
         ?.querySelector(SUBTAG_YEAR_SEASON)
         ?.textContent
         .split(' ')[1];
@@ -232,7 +232,7 @@ async function scrappingMALpage (MALSite) {
     const TAG_MEDIA = "span.information.type";
     const SUBTAG_MEDIA = "a";
     tag = MALSite
-        .querySelector(TAG_MEDIA)
+        ?.querySelector(TAG_MEDIA)
         ?.querySelector(SUBTAG_MEDIA)
         ?.textContent;
     fallback = 'N/A';
@@ -241,7 +241,7 @@ async function scrappingMALpage (MALSite) {
 
     const TAG_STUDIO = "span.information.studio.author";
     tag = MALSite
-        .querySelector(TAG_STUDIO)
+        ?.querySelector(TAG_STUDIO)
         ?.innerText
         ?.split(', ');
     fallback = 'N/A';
@@ -252,7 +252,7 @@ async function scrappingMALpage (MALSite) {
     const TAG_RANKED = "span.numbers.ranked";
     const SUBTAG_RANKED = "strong";
     tag = MALSite
-        .querySelector(TAG_RANKED)
+        ?.querySelector(TAG_RANKED)
         ?.querySelector(SUBTAG_RANKED)
         .textContent;
     fallback = 0;
@@ -285,6 +285,24 @@ async function scrappingMALpage (MALSite) {
     if(membersOnMal !== 0) { membersOnMal = changeCommaToPoint(membersOnMal) }
 
 
+    tag = MALSite?.querySelectorAll("div.spaceit_pad");
+    let [content, genres] = ['', ''];
+
+    for(let i = 0; i < tag.length; i++) {
+        let teste = tag[i].children[0];
+
+        if(teste.innerText === 'Genres:') {
+            content = tag[i];
+            break;
+        }
+    }
+    tag = content
+        ?.querySelectorAll('[itemprop="genre"]');
+    for(let i = 0; i < tag.length; i++) {
+        genres += tag[i].innerText + '/';
+    }
+    if(genres !== '') { genres = genres.slice(0, genres.length - 1) };
+
     return {
         ['title']: title,
         ['coverlink']: coverLink,
@@ -296,7 +314,8 @@ async function scrappingMALpage (MALSite) {
         ['studio']: studio,
         ['rankedOnMal']: rankedOnMal,
         ['popularityOnMAL']: popularityOnMAL,
-        ['members']: membersOnMal
+        ['members']: membersOnMal,
+        ['genres']: genres
     }
 }
 
@@ -304,7 +323,7 @@ function structCSV (dataCSV) {
     // CSV = Comma-Separated Values 
     let CSV = [
         ['sep=,'],
-        ["Title","Cover_Link","Average_Score","Members_Scored", "Season","Year_Season","Media","Studio(s)" ,"Ranked","Popularity", "Members"]
+        ["Title","Cover_Link","Average_Score","Members_Scored", "Season","Year_Season","Media","Studio(s)" ,"Ranked","Popularity", "Members","Genres"]
     ];
 
     for(let i = 0; i < dataCSV.length; i++) {
