@@ -323,7 +323,7 @@ function structCSV (dataCSV) {
     // CSV = Comma-Separated Values 
     let CSV = [
         ['sep=,'],
-        ["Title","Cover_Link","Average_Score","Members_Scored", "Season","Year_Season","Media","Studio(s)" ,"Ranked","Popularity", "Members","Genres"]
+        ["Title","Cover_Link","Average_Score","Members_Scored","Season","Year_Season","Media","Studio(s)","Ranked","Popularity","Members","Genres"]
     ];
 
     for(let i = 0; i < dataCSV.length; i++) {
