@@ -13,14 +13,15 @@ const filters_data = {
     source:               [false, 'MediaSource'],
     startDate_greater:    [false, 'FuzzyDateInt'],
     startDate_lesser:     [false, 'FuzzyDateInt'],
-    strictSearch:         true,
+    strictSearch:         false,
 };
 
-const is_generating_excel = false;
+const is_generating_excel = true;
 
-const useProxy = true;
+const useProxy = false;
 
 /* Lista realizada no .env */
-const proxyList = (process.env.PROXY_LIST).split(', ');
+let proxyList = '';
+if (process.env.PROXY_LIST != '') {proxyList = process.env.PROXY_LIST.split(', ') }
 
 module.exports = { filters_data, is_generating_excel, useProxy, proxyList }
