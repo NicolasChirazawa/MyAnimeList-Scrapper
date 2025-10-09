@@ -167,6 +167,31 @@ async function requestMALPage(MALcode, i) {
     return MALSite;
 }
 
+function searchGrid (MALSite, textContent) {
+    let tag = MALSite?.querySelectorAll("div.spaceit_pad");
+    let [content, table] = ['', ''];
+
+    for(let i = 0; i < tag.length; i++) {
+        let topic = tag[i].children[0];
+
+        if(topic.innerText === textContent) {
+            content = tag[i];
+            break;
+        }
+    }
+
+    if (content === '') { return }
+
+    tag = content
+        ?.querySelectorAll('[itemprop="genre"]');
+    for(let i = 0; i < tag.length; i++) {
+        table += tag[i].innerText + '/';
+    }
+    if(table !== '') { table = table.slice(0, table.length - 1) };
+
+    return table;
+}
+
 async function scrappingMALpage (MALSite) {
     let tag;
 
@@ -284,24 +309,7 @@ async function scrappingMALpage (MALSite) {
     }
     if(membersOnMal !== 0) { membersOnMal = changeCommaToPoint(membersOnMal) }
 
-
-    tag = MALSite?.querySelectorAll("div.spaceit_pad");
-    let [content, genres] = ['', ''];
-
-    for(let i = 0; i < tag.length; i++) {
-        let teste = tag[i].children[0];
-
-        if(teste.innerText === 'Genres:') {
-            content = tag[i];
-            break;
-        }
-    }
-    tag = content
-        ?.querySelectorAll('[itemprop="genre"]');
-    for(let i = 0; i < tag.length; i++) {
-        genres += tag[i].innerText + '/';
-    }
-    if(genres !== '') { genres = genres.slice(0, genres.length - 1) };
+    let genres = searchGrid(MALSite, 'Genres:');
 
     return {
         ['title']: title,
@@ -330,7 +338,19 @@ function structCSV (dataCSV) {
         CSV.push(Object.values(dataCSV[i]));
     }
 
+    CSV[2] = CSV[2].join(',');
+    CSV = CSV.join('\n');
+
     return CSV;
+}
+
+function generateExcel(CSV) {
+    fs.writeFile('MALdata.csv', CSV, 'utf-8', (err) => {
+        if(err) {
+            console.error('Erro ao criar o arquivo: ', err);
+            return;
+        }
+    });
 }
 
 async function main() {
@@ -341,11 +361,11 @@ async function main() {
         console.error(e);
     }
 
-    if(MALCodeList.length === 0) { return console.log(messages.LIST_EQUALS_ZERO) };
+    if  (MALCodeList.length === 0) { return console.log(messages.LIST_EQUALS_ZERO) };
 
     let dataCSV = [];
 
-    for(let i = 0; i < MALCodeList.length; i++) {
+    for (let i = 0; i < MALCodeList.length; i++) {
         try {
             let MALSite = await requestMALPage(MALCodeList[i], i);
             let MALdata = await scrappingMALpage(MALSite);
@@ -357,19 +377,10 @@ async function main() {
         console.log(`====== Progresso: ${i + 1}/${MALCodeList.length} ======`)
     };
 
-    if(is_generating_excel === true) {
+    if (is_generating_excel === true) {
         let CSV = structCSV(dataCSV);
-
-        CSV[2] = CSV[2].join(',');
-        CSV = CSV.join('\n');
-
-        fs.writeFile('MALdata.csv', CSV, 'utf-8', (err) => {
-            if(err) {
-                console.error('Erro ao criar o arquivo: ', err);
-                return
-            }
-        });
+        generateExcel(CSV);
     };
-    console.log(dataCSV)
+    console.log(dataCSV);
 }
 main();
