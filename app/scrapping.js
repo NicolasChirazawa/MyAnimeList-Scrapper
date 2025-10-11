@@ -1,11 +1,13 @@
 const fs = require('fs');
 const { parse } = require('node-html-parser');
 
-const { filters_data, is_generating_excel, useProxy } = require('./parameters.js');
+const { filters_data, special_filter, is_generating_excel, useProxy } = require('./parameters.js');
 const { requestProxy } = require('./proxy_server.js');
 const { messages } = require("./messages.js");
 
-function graphQLStruct (filters_data, strictSearch) {
+function graphQLStruct (filters_data, special_filter) {
+    let { strictSearch, top } = { ...special_filter };
+
     let [query_struct, media_struct]= ['', ''];
     let variables = {};
 
@@ -23,7 +25,12 @@ function graphQLStruct (filters_data, strictSearch) {
     let query;
     if (strictSearch === false) {
         variables['page'] = 1;
-        variables['perPage'] = 50;
+
+        if (top !== false && top < 50) {
+            variables['perPage'] = top;
+        } else {
+            variables['perPage'] = 50;
+        }
 
         query = 
         `query (${query_struct}$page: Int, $perPage: Int) {
@@ -79,31 +86,41 @@ async function graphqlSearch (query, variables) {
     return data;
 }
 
-async function requestMALcodeList (filters_data) {    
-    const strictSearch = filters_data['strictSearch'];
-    delete filters_data.strictSearch;
-
-    const [query, variables] = graphQLStruct(filters_data, strictSearch);
+async function requestMALcodeList (filters_data, special_filter) {    
+    const [query, variables] = graphQLStruct(filters_data, special_filter);
+    let { top } = { ...special_filter };
 
     let MALCodeList = [];
+    let stopLoop = false;
 
-    while(true) {
+    while (true) {
         data = await graphqlSearch(query, variables);
 
-        if(data?.Page !== undefined) {
-            const perPage = data.Page.media.length;
-            for(let i = 0; i < perPage; i++) {
-                const idMal = data.Page.media[i]?.idMal;
-                if(idMal !== null) { MALCodeList.push(idMal); }
-            }
-            const hasNextPage = data.Page.pageInfo.hasNextPage;
-            if (hasNextPage) {
-                variables.page += 1;
-            } else {
-                break;
-            }
-        } else {
+        if(data?.Page === undefined) {
             MALCodeList.push(data.Media.idMal);
+            break;
+        }
+
+        let perPage = data.Page.media.length;
+
+        if (top !== false && top > 50) { 
+            top -= 50;
+        }
+        else { 
+            perPage = top; 
+            stopLoop = true 
+        };
+
+        for(let i = 0; i < perPage; i++) {
+            const idMal = data.Page.media[i]?.idMal;
+            if(idMal !== null) { MALCodeList.push(idMal); }
+        }
+        
+        const hasNextPage = data.Page.pageInfo.hasNextPage;
+
+        if (hasNextPage && stopLoop === false) {
+            variables.page += 1;
+        } else {
             break;
         }
     }
@@ -187,7 +204,7 @@ function searchGrid (MALSite, textContent) {
     for(let i = 0; i < tag.length; i++) {
         table += tag[i].innerText + '/';
     }
-    if(table !== '') { table = table.slice(0, table.length - 1) };
+    if (table !== '') { table = table.slice(0, table.length - 1) };
 
     return table;
 }
@@ -356,12 +373,12 @@ function generateExcel(CSV) {
 async function main() {
     let MALCodeList;
     try {
-        MALCodeList = await requestMALcodeList(filters_data);
+        MALCodeList = await requestMALcodeList(filters_data, special_filter);
     } catch (e) {
         console.error(e);
     }
 
-    if  (MALCodeList.length === 0) { return console.log(messages.LIST_EQUALS_ZERO) };
+    if (MALCodeList.length === 0) { return console.log(messages.LIST_EQUALS_ZERO) };
 
     let dataCSV = [];
 
