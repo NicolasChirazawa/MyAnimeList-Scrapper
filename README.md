@@ -8,9 +8,9 @@
 </div>
 
 <h2 name="descricao">Descrição</h2>
-Projeto de estudo envolvedo o webscraping dos dados do site <a href="https://myanimelist.net/">MyAnimeList</a>. <br> <br>
-A ideia dessa ferramenta nasceu com minha intenção de produzir um estudo pessoal das médias anuais de animês ao longo dos anos de 1980 a 2025. Assim, proporcionando 
-um dado concreto para entender se houve um aumento nas médias anuais e o porquê dessa mudança.
+Projeto de estudo do 'Web Scraping' de dados do site <a href="https://myanimelist.net/">MyAnimeList</a>. <br> <br>
+A ideia dessa ferramenta nasceu com minha intenção de produzir uma métrica sobre as médias anuais de animês ao longo dos anos de 1980 a 2025. Assim, facilitado 
+na coleta de dados e na compreensão de um objetivo, se houve um aumento nas médias anuais e o porquê dessa mudança.
 
 <h2 name="inicializar">Iniciando</h2>
 
@@ -21,14 +21,15 @@ um dado concreto para entender se houve um aumento nas médias anuais e o porqu�
 
 <h3>Meios de acessar o projeto</h3>
 
-<a href="https://github.com/NicolasChirazawa/MyAnimeList-Scrapper.git">Clone</a> o projeto ou <a href="https://github.com/NicolasChirazawa/MyAnimeList-Scrapper/archive/refs/heads/main.zip">baixe-o</a>; <br>
-
 ```
-gh repo clone NicolasChirazawa/MyAnimeList-Scrapper
+https://github.com/NicolasChirazawa/MyAnimeList-Scrapper.git
 ```
 
 <h3>Instalação de dependências</h3>
-Foi utilizado apenas uma dependência nesse projeto, 'node-html-parser', sua função foi transformar 'texto' em código 'html' para realizar a busca de suas 'tags'.
+Foi utilizado apenas uma dependência nesse projeto: <br> <br>
+- <a href="https://www.npmjs.com/package/node-html-parser">node-html-parser</a>; <br> <br>
+
+Sua função é parsear 'texto' em código 'html' para realizar a busca de suas 'tags'. <br>
 Para baixar esta dependência, use o comando: <br> <br>
 
 ```
@@ -37,20 +38,20 @@ npm i
 
 <h3>Preparação do .env</h3>
 Na raiz do projeto consta um arquivo <strong>'.env_example'</strong>, você deve renomeá-lo para <strong>'.env'</strong> pois o mesmo será utilizado em sua execução.
-Nele consta uma variável de ambiente 'PROXY_LIST'. <br> <br>
+Nele, consta uma variável de ambiente 'PROXY_LIST'. <br> <br>
 
 ```env
-## Há três opções:
+## Há três opções para configurá-lo:
 
 PROXY_LIST: ""                                 ## Não utilizá-lo;
 PROXY_LIST: "xxx.xx.xxx.xx"                    ## Utilizar apenas um proxy;
 PROXY_LIST: "xxx.xx.xxx.xx, xxx.xx.xxx.xxx"    ## Utilizar uma lista, separe-os com vírgula e espaço (, );
 ```
 
-Já foi configurado a utilização para proxies que pedem autorização (este tópico será comentado mais abaixo).
+Já foi disposto a utilização de 'Proxy's que pedem autorização (este tópico será abordado mais abaixo.
 
 <h3>Rodar o projeto</h3>
-Para rodar o projeto basta usar o comando: <br> <br>
+Para rodar o projeto, basta usar o comando: <br> <br>
 
 ```
 npm run start
@@ -64,9 +65,9 @@ npm run start
 <br>
 
 1. Tem acesso a página web bruta;
-2. Transforma em um conteúdo que pode ser extraído igual uma página web;
-3. Extraí os dados necessários através dos meios de busca no document;
-4. Armazena em um banco de dados, arquivo CSV ou qualquer outro lugar;
+2. Parseia num conteúdo que pode ser extraído igual uma página web;
+3. Extraí os dados necessários através dos meios de identificação no 'document';
+4. Armazena em um banco de dados, arquivo CSV ou outro lugar;
 
 <p>Arquitetura aplicada no processo desse projeto:</p>
 
@@ -74,31 +75,38 @@ npm run start
 
 1. Com os parâmetros definidos, é cumprido uma busca[^1] na <strong>API do Anilist</strong>, retornando os códigos respectivos dos
 animês no site do MAL; <br>
-2. É verificado se será ou não utilizado proxy[^2] na sua busca no site do MAL;
-3. É feito um loop de buscas, o resultado de cada um deles é parseado para HTML;
-4. Após isso, é extraido as informações pré-definidas no código;
-5. É verificado se a resposta será retornada em um simples console.log() ou em um
+2. É verificado se será ou não utilizado proxy[^2] na sua(s) busca(s) no site do MAL;
+3. É feito um loop de busca(s), o resultado de cada uma delas é parseado para HTML;
+4. É extraido as informações pré-definidas da págiba;
+5. É decidido se a resposta será retornada em um simples console.log() ou num
 arquivo '.CSV' (Comma Separate Value); <br>
 
 <h2 name="inicializar">Como usar?</h2>
-O projeto disponibiliza o arquivo 'parameters.js' ('./MyAnimeList-Scrapper/app/parameters.js) que será utilizado
-para realizar a configuração da sua busca. Nele, é possível customizar três parâmetros: <br> <br>
+O projeto disponibiliza o arquivo 'parameters.js' ('./MyAnimeList-Scrapper/app/parameters.js) que deve ser utilizado
+para realizar a configuração da sua busca. Nele, é possível customizar quatro parâmetros: <br> <br>
 
 - filters_data: Filtragem de dados para a API do Anilist, caso queira utilizar um dado, mude o 'false' para o critério';
+- special_filters: Filtragem de dados através de critérios como a 'strict_search' (determina a busca de uma obra) e o 'top';
 - Is_generating_excel: Geração de Excel com o resultado da pesquisa;
 - useProxy: Determina se vai ou não ser utilizado um Proxy para os requests no MAL;
 <br>
 
-Caso queira ver melhor como funciona os critérios de busca nos filtros, fiz um arquivo mais descritivo dentro desse
-projeto explicando, acesse o 'parameters_descrition.txt' que está disponível na raiz. Ou, você também pode acessar a
+Caso queira ver melhor como funciona os critérios de busca nos filtros, há um arquivo mais descritivo chamado
+'parameters_descrition.txt', este está disponível na raiz. Ou, você também pode acessar a
 <a href="https://docs.anilist.co/guide/graphql/">API do Anilist</a> diretamente.
 
 <h2 name="inicializar">Limitações</h2>
-Há um infeliz e claro problema, dependendo de quais objetivos você persiga. <br>
-Poderia ser possível utilizar a <strong>API do MAL</strong> para capturar as informações, entretanto, ela não é tão boa para buscas em massa
-cujo é um dos objetivos desse projeto, além disso, é necessário vincular seu usuário a uma chave API, assim, pelas guidelines
-seria possível ser banido tanto o usuário quanto o ip. 
-Ainda sim, esse projeto respeita o 'robots.txt' do MyAnimeList. <br> <br>
+Há um infeliz e claro problema dependendo de quais objetivos você persiga. <br>
+Poderia ser possível utilizar a <strong>API do MAL</strong> para capturar as informações, entretanto, ela não é tão boa para buscas gerais
+cujo é um dos objetivos desse projeto, como também, é necessário vincular seu usuário a uma chave API, e, dessa forma, possívelmente 
+seria banido tanto o usuário quanto o ip por infringir as guidelines da API. 
+
+<br>
+
+> [!IMPORTANT]
+> Este projeto respeita o 'robots.txt' do MyAnimeList.
+
+<br>
 
 Por conta disso, foi utilizado a API do Anilist, que para utilização dos filtros com dados concretos, fornece resultados previsíveis, como em:
 - Data de lançamento;
