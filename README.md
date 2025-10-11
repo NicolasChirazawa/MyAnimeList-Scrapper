@@ -8,7 +8,7 @@
 </div>
 
 <h2 name="descricao">Descrição</h2>
-Um projeto de estudo para realizar o webscrapping de dados do site <a href="https://myanimelist.net/">MyAnimeList</a>. <br> <br>
+Projeto de estudo envolvedo o webscraping dos dados do site <a href="https://myanimelist.net/">MyAnimeList</a>. <br> <br>
 A ideia dessa ferramenta nasceu com minha intenção de produzir um estudo pessoal das médias anuais de animês ao longo dos anos de 1980 a 2025. Assim, proporcionando 
 um dado concreto para entender se houve um aumento nas médias anuais e o porquê dessa mudança.
 
