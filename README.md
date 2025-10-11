@@ -99,15 +99,12 @@ Caso queira ver melhor como funciona os critérios de busca nos filtros, há um 
 Há um infeliz e claro problema dependendo de quais objetivos você persiga. <br>
 Poderia ser possível utilizar a <strong>API do MAL</strong> para capturar as informações, entretanto, ela não é tão boa para buscas gerais
 cujo é um dos objetivos desse projeto, como também, é necessário vincular seu usuário a uma chave API, e, dessa forma, possívelmente 
-seria banido tanto o usuário quanto o ip por infringir as guidelines da API. 
-
-<br>
+seria banido tanto o usuário quanto o ip por infringir as guidelines da API. <br ><br>
 
 > [!IMPORTANT]
 > Este projeto respeita o 'robots.txt' do MyAnimeList.
 
 <br>
-
 Por conta disso, foi utilizado a API do Anilist, que para utilização dos filtros com dados concretos, fornece resultados previsíveis, como em:
 - Data de lançamento;
 - Busca por nome;
