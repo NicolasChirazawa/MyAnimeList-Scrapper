@@ -9,7 +9,7 @@ const filters_data = {
     search:               [false, 'String'],
     season:               [false, 'MediaSeason'],
     seasonYear:           [false, 'Int'],
-    sort:                 [false, 'MediaSort'],
+    sort:                 [false, '[MediaSort]'],
     source:               [false, 'MediaSource'],
     startDate_greater:    [false, 'FuzzyDateInt'],
     startDate_lesser:     [false, 'FuzzyDateInt'],
