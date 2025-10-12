@@ -124,7 +124,7 @@ Mas para dados voláteis na utilização dos filtros, pode apresentar resultados
 <h2 name="inicializar">A fazer</h2>
 
 - [ ] Meio de determinar que será feito uma ordenação;
-- [ ] Meio de fazer um top para as obras buscadas;
+- [X] Meio de fazer um top para as obras buscadas;
 
 [^1]: É necessário realizar essa busca na API do Anilist para capturar o(s) código(s) da URL do MAL, como em: 'https://myanimelist.net/anime/59027/'. Poderia ser obtido tais pelo MAL, mas ela é vinculada ao seu user.
 [^2]:É possível realizar uma busca massiva no MAL pelo seu próprio IP, mas não é recomendado pois pode resultar em IP ban.
